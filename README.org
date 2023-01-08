@@ -1,0 +1,68 @@
+** fishyplete
+
+Minimalist autocompletion frontend for Emacs. There are no popups or frames, it
+only shows a preview with "ghost text" of the first candidate. This is inspired
+by the fish shell's autocompletion style. To get full autocompletion, you can
+use something like ~consult-completion-at-point~.
+
+*** Rationale 
+
+The cannonical implementation of modern "autocompletion" seeks to solve what I
+consider to be two separate use cases;
+
+1.) You are typing a long symbol name and you want to save keystrokes by
+pressing a key such as ~<TAB>~ or ~C-f~ (the default fish shell binding) to finish
+the rest of the symbol.
+
+2.) You are exploring an API or you are not sure what symbol you need. You want
+to browse, filter, view metadata, and/or read documentation until you find what
+you're looking for.
+
+If we recognize that these are indeed two separate use cases, then my critique
+is that the "modern" UX implementation of autocompletion doesn't do either use
+case very well because it's trying to cater to both at the same time. ~fishyplete~
+attempts to provide a better UX for the first use case. A future package I hope
+to develop would be likely be called ~consult-lsp-completion~ and will attempt to
+provide a better interface for #2.
+
+**** How does this package help?
+
+The reason I believe ~fishyplete~ provides better UX for the first use case is
+that UI popups/overlays showing multiple completion candidates are trying to
+solve use case #2 at the same time they are trying to solve #1. Hence it
+presents a lot of distracting information and visual "bells" while you are
+typing. I have found myself often typing at the "speed of autocompletion"
+because my brain is wired to think that I need to interact with all these visual
+elements showing up. Have you ever stopped typing to autocomplete a symbol you
+could've finished faster if you had just typed the whole thing out? I know I
+have. When I know what I want to type, I don't want to see any extra noise and
+~fishyplete~ fixes this by showing the minimum amount of information needed to
+know whether it can finish the symbol for you.
+
+**** What about the use case #2?
+
+Packages like ~vertico~, ~marginalia~, and ~consult~, IMHO, provide a superior UX for
+use case #2. This framework provides the mechanisms to support all of the
+features you see in an autocompletion popup; decorative icons, function
+signatures, documentation synopses, and documentation previews. All with a
+superior interface to autocompletion popups while also unifying the interfaces.
+
+**** Why show a preview at all then?
+
+By at least providing a visual cue, you can make sure you don't waste time
+autocompleting the wrong thing, so while no preview is taking the concept to its
+logical conclusion, I believe completion misses are enough of a nuisance to
+accept at least a little hint while you're typing.
+
+**** Doesn't ~company-mode~ already have this feature?
+
+It sure does and it works rather nicely. It's still my daily driver until I get
+this working. However, it's quite a large package that brings in a lot of extra
+functionality and I can hook into [[https://github.com/minad/cape][Cape]] which plays a bit nicer with Emac's
+built-in functionality. Plus I want to learn and get better at elisp to
+contribute to this amazing community so figured this would be a great way to
+start.
+
+*** Current status
+Currently in prototyping phase
+

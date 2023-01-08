@@ -1,0 +1,99 @@
+** What do we know so far?
+
+*** How to hook into typing
+
+So far all the completion systems hook into the before and after all commands,
+then you must check which command was executed, so this is the entry point to
+everything as we have to check which commands were fired and from there, check
+to see if the current context allows us to do completions.
+
+#+begin_src emacs-lisp
+(add-hook 'pre-command-hook #'fishyplete--pre-command nil t)
+(add-hook 'post-command-hook #'fishyplete--post-command nil t))
+#+end_src
+
+*** Overlays
+
+The way to display a completion is to use overlays, as it offers a quick
+rendering that's not meant to be selectable. This is apparently what Flycheck
+uses all over the place for its diagnostics.
+
+Important functions here are
+
+- ~(setq my-overlay (make-overlay (point) (point)))~
+  You can then assign the overlay to a variable with setq to delete it later
+
+- ~(overlay-put my-overlay 'after-string text-to-display)~
+  Use this to actually show some text
+
+- ~(add-text-properties 0 (length text-to-display)
+                       '(face fishyplete-preview-face) text-to-display)~
+  Use this to give the overlay text a face
+
+- ~(remove-overlays)~
+  If you run into a situation where you have stray overlays you need to delete,
+  call this function
+
+- ~(delete-overlay my-overlay)~
+  Finally, delete the overlay when you're done with it
+
+
+*** Completion
+**** ~try-completion~
+This seems to be the most basic function. It's a C function which takes a string
+and a list of strings as arguments and tries to complete it given a list of
+strings;
+
+#+begin_src emacs-lisp
+(try-completion "my-" '(your-function their-function his-function my-function))
+#+end_src
+
+#+RESULTS:
+: my-function
+
+However, it only works via prefix, it doesn't fuzzy complete it, apparently, so
+the following doesn't work;
+
+#+begin_src emacs-lisp
+(message "%s" (try-completion "var" '(their-function my-variable his-function my-function)))
+#+end_src
+
+#+RESULTS:
+: nil
+
+**** ~completion-try-completion~
+
+Looks like a more complicated function, corfu is using it for something
+
+**** ~completing-read~
+
+This is the most basic function that triggers minibuffer completion, and thus
+vertico and all the other stuff. It takes quite a few arguments so refer to the
+documentation in order to get an idea of all the ways to use it.
+
+[[info:elisp#Minibuffer Completion]]
+
+#+begin_src emacs-lisp
+(completing-read "Prompt: " '(one two three four five) nil nil "")
+#+end_src
+
+**** ~all-completions~
+
+Similar to ~try-completion~ but returns a list of all possible completions,
+probably not helpful for us, but might be helpful when sending something to
+completing-read
+
+#+begin_src emacs-lisp
+(all-completions "foo" '("foobar1" "barfoo" "foobaz" "foobar2") nil t)
+#+end_src
+
+#+RESULTS:
+| foobar1 | foobaz | foobar2 |
+
+**** ~completion-in-region~
+
+This function inserts the text provided by completions directly into the buffer,
+however it pulls up some odd buffer in another window to select a completion
+when there are multiple. This is what consult wraps in order to show completions.
+
+~(completion-in-region (point) (point) '(foo bar baz))~
