@@ -10,38 +10,7 @@ The value is in seconds."
   '((t (:inherit shadow)))
   "Face for the preview.")
 
-;; (setq joe/test-overlay (make-overlay (- (point-max) 5) (point-max)))
-
-(setq text-to-display "12345")
-;; (add-text-properties 0 1 '(cursor 1) text-to-display)
-(add-text-properties 0 (length text-to-display)
-                     '(face fishyplete-preview-face) text-to-display)
-;; (overlay-put joe/test-overlay 'face 'fishyplete-preview-face)
-(overlay-put joe/test-overlay 'after-string text-to-display)
-
-(delete-overlay joe/test-overlay)
-(remove-overlays)
-
-(defun fishyplete--pre-command ()
-  (when fishyplete--overlay
-    (delete-overlay fishyplete--overlay)
-    (setq text-to-display nil)
-    (setq fishyplete--overlay nil)))
-
-(defun fishyplete--post-command ()
-  (setq fishyplete--overlay (make-overlay (point) (point)))
-  (setq text-to-display (elisp-completion-at-point))
-  (add-text-properties 0 (length text-to-display)
-                       '(face fishyplete-preview-face) text-to-display)
-  (overlay-put fishyplete--overlay 'after-string text-to-display))
-(elisp-completion-at-point)
-(defun joe/test-capf ()
-  (interactive)
-  (pcase  (elisp-completion-at-point)
-    ((and res `(,beg ,end ,table . ,plist))
-     (message "%s" table))))
-(joe/test-capf)
-(define-key global-map (kbd "C-S-i") #'joe/test-capf)
+(setq fishyplete--text-to-display nil)
 
 (defun joe/get-completions (string)
   "Get a list of completions for STRING using `completion-at-point-functions'."
@@ -56,6 +25,7 @@ The value is in seconds."
 
 (defun joe/show-first-completion (string)
   "Show the first completion for STRING using overlays."
+  (interactive)
   (let ((completions (joe/get-completions string)))
     (if completions
         (let ((first-completion
@@ -65,19 +35,42 @@ The value is in seconds."
           (message "%s" first-completion))
       (message "No completions found"))))
 
-(joe/show-first-completion "completion-at-poi")
+(defun fishyplete--pre-command ()
+  (when fishyplete--overlay
+    (delete-overlay fishyplete--overlay)
+    (setq fishyplete--text-to-display nil)
+    (setq fishyplete--overlay nil)))
 
-(completion-in-region (point) (point) '(foo bar baz))
+(defun fishyplete--post-command ()
+  (setq fishyplete--overlay (make-overlay (point) (point)))
+  (setq fishyplete--text-to-display (elisp-completion-at-point))
+  (add-text-properties 0 (length fishyplete--text-to-display)
+                       '(face fishyplete-preview-face) fishyplete--text-to-display)
+  (overlay-put fishyplete--overlay 'after-string fishyplete--text-to-display))
 
-(defun fishyplete--post-command () 
-  (message "%s" (elisp-completion-at-point)))
-(elisp--completion-local-symbols)
-(completion-at-point)
-(completion-in-region)
-(completion-try-completion (- (point) 20) (- (point) 10))
-;; (defun joe/test-post-command-hook () (message "Hello I am %s" this-command))
-;; (add-hook 'post-command-hook #'joe/test-post-command-hook nil t)
-(completion-at-point)
+;; (define-key global-map (kbd "C-S-i") #'joe/show-first-completion)
+(define-key global-map (kbd "C-S-i")
+            (lambda () (interactive) (joe/show-first-completion "max_")))
+;; (delete-overlay fishyplete--text-to-display)
+;; (remove-overlays)
+
+;; (elisp-completion-at-point)
+;; (defun joe/test-capf ()
+;;   (interactive)
+;;   (pcase  (elisp-completion-at-point)
+;;     ((and res `(,beg ,end ,table . ,plist))
+;;      (message "%s" table))))
+;; (joe/test-capf)
+
+;; (defun fishyplete--post-command () 
+;;   (message "%s" (elisp-completion-at-point)))
+;; (elisp--completion-local-symbols)
+;; (completion-at-point)
+;; (completion-in-region)
+;; (completion-try-completion (- (point) 20) (- (point) 10))
+;; (completion-at-point)
+
+
 ;;;###autoload
 (define-minor-mode fishyplete-mode
   :init-value nil
